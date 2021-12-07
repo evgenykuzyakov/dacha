@@ -1511,7 +1511,7 @@ export class App extends React.Component {
         {weapons}
         <a
           className={`github-fork-ribbon right-bottom fixed${watchClass}`}
-          href="https://github.com/evgenykuzyakov/berryclub"
+          href="https://github.com/evgenykuzyakov/dacha"
           data-ribbon="Fork me on GitHub"
           title="Fork me on GitHub"
         >
