@@ -1,0 +1,47 @@
+{
+  "name": "frontend",
+  "version": "0.2.0",
+  "homepage": "https://berryclub.io",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
+    "big.js": "^6.1.1",
+    "near-api-js": "^0.44.0",
+    "node-sass": "^4.0.0",
+    "react": "^16.13.1",
+    "react-bootstrap": "^1.0.0",
+    "react-color": "^2.18.1",
+    "react-compound-timer": "^1.2.0",
+    "react-dom": "^16.13.1",
+    "react-files": "^2.4.8",
+    "react-scripts": "3.4.0",
+    "react-switch": "^5.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "deploy": "yarn build && gh-pages -d build"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "gh-pages": "^2.2.0"
+  }
+}

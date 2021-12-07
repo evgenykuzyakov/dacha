@@ -1,0 +1,15 @@
+{
+  "short_name": "Dacha Finance",
+  "name": "Dacha Finance - buy \uD83E\uDD54 - plant \uD83E\uDD54 - farm \uD83E\uDD54 - sell \uD83E\uDD54",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
