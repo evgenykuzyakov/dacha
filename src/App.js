@@ -1425,6 +1425,12 @@ export class App extends React.Component {
           >
             Trade {Potato}
           </a>
+          <a
+            className="btn btn-outline-none"
+            href={`https://app.ref.finance/pool/${this._potatoPoolId}`}
+          >
+            REF Pool {Potato}
+          </a>
           {content}
         </div>
         <div className="container">
