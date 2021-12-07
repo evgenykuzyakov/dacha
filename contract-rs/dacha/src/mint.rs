@@ -1,11 +1,13 @@
 use crate::*;
 use near_sdk::{ext_contract, Gas};
 
-// const REF_FINANCE_ACCOUNT_ID: &str = "v2.ref-finance.near";
-// const WRAP_NEAR_TOKEN_ID: &str = "wrap.near";
+// Mainnet config
+const REF_FINANCE_ACCOUNT_ID: &str = "v2.ref-finance.near";
+const WRAP_NEAR_TOKEN_ID: &str = "wrap.near";
 
-const REF_FINANCE_ACCOUNT_ID: &str = "ref-finance-101.testnet";
-const WRAP_NEAR_TOKEN_ID: &str = "wrap.testnet";
+// Testnet config
+// const REF_FINANCE_ACCOUNT_ID: &str = "ref-finance-101.testnet";
+// const WRAP_NEAR_TOKEN_ID: &str = "wrap.testnet";
 
 const GAS_FOR_SWAP: Gas = 20 * 10u64.pow(12);
 const GAS_FOR_STORAGE_DEPOSIT: Gas = 5 * 10u64.pow(12);

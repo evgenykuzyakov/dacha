@@ -29,7 +29,7 @@ const TestNearConfig = {
 const MainNearConfig = {
   networkId: "mainnet",
   nodeUrl: "https://rpc.mainnet.near.org",
-  contractName: "berryclub.ek.near",
+  contractName: "v1.dacha-finance.near",
   walletUrl: "https://wallet.near.org",
   refContractName: "v2.ref-finance.near",
   wrapNearContractName: "wrap.near",
