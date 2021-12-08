@@ -785,23 +785,28 @@ export class App extends React.Component {
     this.renderCanvas();
   }
 
+  async _fetchRefPool() {
+    const rawPool = await this._refFinanceContract.get_pool({
+      pool_id: this._potatoPoolId,
+    });
+    const potato = Big(rawPool.amounts[0]);
+    const near = Big(rawPool.amounts[1]);
+    const fee = rawPool.total_fee;
+    return { potato, near, fee };
+  }
+
   async _refreshRef() {
-    const [rawPool, rawUnmintedAmount, rawTotalSupply] = await Promise.all([
-      this._refFinanceContract.get_pool({
-        pool_id: this._potatoPoolId,
-      }),
+    const [refPool, rawUnmintedAmount, rawTotalSupply] = await Promise.all([
+      this._fetchRefPool(),
       this._contract.get_unminted_amount(),
       this._contract.ft_total_supply(),
     ]);
     const unmintedAmount = Big(rawUnmintedAmount);
     const totalSupply = Big(rawTotalSupply);
-    const potato = Big(rawPool.amounts[0]);
-    const near = Big(rawPool.amounts[1]);
-    const fee = rawPool.total_fee;
     this.setState({
       unmintedAmount,
       totalSupply,
-      refPool: { potato, near, fee },
+      refPool,
     });
   }
 
@@ -1099,14 +1104,34 @@ export class App extends React.Component {
     }
   }
 
-  nearPotato(near, potato) {
+  adjustRefPool(refPool, unmintedAmount) {
+    if (!unmintedAmount || unmintedAmount.eq(0)) {
+      return refPool;
+    }
+    const { fee, near, potato } = refPool;
+
+    const amountWithFee = Big(unmintedAmount).mul(Big(10000 - fee));
+    const nearOut = amountWithFee
+      .mul(near)
+      .div(Big(10000).mul(potato).add(amountWithFee))
+      .round(0, 0);
+    return {
+      fee,
+      potato: potato.add(unmintedAmount),
+      near: near.sub(nearOut),
+    };
+  }
+
+  nearPotato(refPool, unmintedAmount, near, potato) {
+    refPool = this.adjustRefPool(refPool, unmintedAmount);
+
     let nearIn, potatoOut;
     if (near) {
       nearIn = Big(near).mul(Big(10).pow(24)).round(0, 0);
-      potatoOut = this.getRefReturn(nearIn);
+      potatoOut = this.getRefReturn(refPool, nearIn);
     } else {
       potatoOut = Big(potato).mul(Big(10).pow(18)).round(0, 0);
-      nearIn = this.getRefInverseReturn(potatoOut);
+      nearIn = this.getRefInverseReturn(refPool, potatoOut);
     }
     return { nearIn, potatoOut };
   }
@@ -1139,7 +1164,14 @@ export class App extends React.Component {
     ]);
     const tokenBalance = Big(rawTokenBalance);
 
-    const { nearIn, potatoOut } = this.nearPotato(near, potato);
+    const refPool = await this._fetchRefPool();
+
+    const { nearIn, potatoOut } = this.nearPotato(
+      refPool,
+      Big(0),
+      near,
+      potato
+    );
 
     if (nearIn.gt(tokenBalance)) {
       const needDeposit = nearIn.sub(tokenBalance);
@@ -1227,31 +1259,32 @@ export class App extends React.Component {
     document.body.style.backgroundColor = "#333";
   }
 
-  getRefReturn(amountIn) {
-    let amountWithFee = Big(amountIn).mul(Big(10000 - this.state.refPool.fee));
+  getRefReturn(refPool, amountIn) {
+    let amountWithFee = Big(amountIn).mul(Big(10000 - refPool.fee));
     return amountWithFee
-      .mul(this.state.refPool.potato)
-      .div(Big(10000).mul(this.state.refPool.near).add(amountWithFee))
+      .mul(refPool.potato)
+      .div(Big(10000).mul(refPool.near).add(amountWithFee))
       .round(0, 0);
   }
 
-  getRefInverseReturn(amountOut) {
-    if (amountOut.gte(this.state.refPool.potato)) {
+  getRefInverseReturn(refPool, amountOut) {
+    if (amountOut.gte(refPool.potato)) {
       return null;
     }
     return Big(10000)
-      .mul(this.state.refPool.near)
+      .mul(refPool.near)
       .mul(amountOut)
-      .div(
-        Big(10000 - this.state.refPool.fee).mul(
-          this.state.refPool.potato.sub(amountOut)
-        )
-      )
+      .div(Big(10000 - refPool.fee).mul(refPool.potato.sub(amountOut)))
       .round(0, 3);
   }
 
   buyButton(near, potato) {
-    const { nearIn, potatoOut } = this.nearPotato(near, potato);
+    const { nearIn, potatoOut } = this.nearPotato(
+      this.state.refPool,
+      this.state.unmintedAmount,
+      near,
+      potato
+    );
     return (
       <button
         className="btn btn-primary"
@@ -1338,6 +1371,15 @@ export class App extends React.Component {
     );
   }
 
+  computePotatoPrice() {
+    const refPool = this.adjustRefPool(
+      this.state.refPool,
+      this.state.unmintedAmount
+    );
+
+    return refPool.potato.mul(1000000).div(refPool.near).toFixed(3);
+  }
+
   render() {
     const watchClass = this.state.watchMode ? " hidden" : "";
 
@@ -1349,11 +1391,7 @@ export class App extends React.Component {
               Price:{" "}
               <span className="balances">
                 <span className="font-weight-bold">
-                  1Ⓝ ={" "}
-                  {this.state.refPool.potato
-                    .mul(1000000)
-                    .div(this.state.refPool.near)
-                    .toFixed(3)}
+                  1Ⓝ = {this.computePotatoPrice()}
                 </span>
               </span>
               {Potato}
@@ -1362,7 +1400,10 @@ export class App extends React.Component {
               Circulating supply:{" "}
               <span className="balances">
                 <span className="font-weight-bold">
-                  {this.state.totalSupply.div(Big(10).pow(18)).toFixed(2)}
+                  {this.state.totalSupply
+                    .add(this.state.unmintedAmount)
+                    .div(Big(10).pow(18))
+                    .toFixed(2)}
                   {Potato}
                 </span>
               </span>
