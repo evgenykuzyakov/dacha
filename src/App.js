@@ -1328,9 +1328,9 @@ export class App extends React.Component {
             REF pool and from contract gas rewards.
           </p>
           <p>
-            The may or may not be an airdrop of $DACHA token for the early users
-            of dacha finance based on the number of {Potato} farmed and the
-            number of {Potato} planted. <br />
+            There may or may not be an airdrop of $DACHA token for the early
+            users of dacha finance based on the number of {Potato} farmed and
+            the number of {Potato} planted. <br />
             Enjoy!
           </p>
         </div>
