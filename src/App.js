@@ -5,6 +5,7 @@ import Big from "big.js";
 import * as nearAPI from "near-api-js";
 import { HuePicker, GithubPicker } from "react-color";
 import { Weapons } from "./Weapons";
+import { sha256 } from "js-sha256";
 
 const defaultCodeHash = "11111111111111111111111111111111";
 
@@ -122,7 +123,8 @@ const decodeLine = (line) => {
   return pixels;
 };
 
-const WeaponsCheat = "whendacha";
+const WeaponsCheat = "3RsmJFsbD5JeiRFCCDJVFPnVrux83hgURbWArpghHBD6";
+const CodeLength = 9;
 
 export class App extends React.Component {
   constructor(props) {
@@ -187,7 +189,7 @@ export class App extends React.Component {
       highlightedAccountIndex: -1,
       selectedOwnerIndex: false,
       weaponsOn: false,
-      weaponsCodePosition: 0,
+      weaponsCodeKeys: [],
       watchMode: false,
       refPool: false,
       unmintedAmount: Big(0),
@@ -332,21 +334,17 @@ export class App extends React.Component {
     });
 
     document.addEventListener("keyup", (e) => {
-      if (this.state.weaponsCodePosition < WeaponsCheat.length) {
-        if (
-          e.key.toLowerCase() === WeaponsCheat[this.state.weaponsCodePosition]
-        ) {
-          this.setState({
-            weaponsCodePosition: this.state.weaponsCodePosition + 1,
-            weaponsOn:
-              this.state.weaponsCodePosition + 1 === WeaponsCheat.length,
-          });
-        } else {
-          this.setState({
-            weaponsCodePosition: 0,
-          });
-        }
-      }
+      const weaponsCodeKeys = [
+        e.key.toLowerCase().charCodeAt(0),
+        ...this.state.weaponsCodeKeys,
+      ].slice(0, CodeLength);
+      const codeHash = nearAPI.utils.serialize.base_encode(
+        new Uint8Array(sha256.array(weaponsCodeKeys))
+      );
+      this.setState({
+        weaponsCodeKeys,
+        weaponsOn: this.state.weaponsOn || codeHash === WeaponsCheat,
+      });
       !e.altKey && this.disablePickColor();
     });
   }
@@ -1242,7 +1240,6 @@ export class App extends React.Component {
     this.imageData = img;
     this.setState({
       weaponsOn: false,
-      weaponsCodePosition: 0,
       rendering: true,
       pickingColor: false,
       potatoNeeded,
@@ -1253,7 +1250,6 @@ export class App extends React.Component {
     this.setState({
       watchMode: true,
       weaponsOn: false,
-      weaponsCodePosition: 0,
     });
     document.body.style.transition = "3s";
     document.body.style.backgroundColor = "#333";
