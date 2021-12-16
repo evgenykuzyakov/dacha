@@ -16,7 +16,10 @@ const randomPublicKey = nearAPI.utils.PublicKey.from(
   "ed25519:8fWHD35Rjd78yeowShh9GwhRudRtLLsGCRjZtgPjAtw9"
 );
 const StorageCostPerByte = Big(10).pow(19);
-const AccountSafetyMargin = Big(10).pow(24).div(2);
+const OneNear = Big(10).pow(24);
+const AccountSafetyMargin = OneNear.div(2);
+const OnePotato = Big(10).pow(18);
+const OneDacha = Big(10).pow(18);
 
 const IsMainnet = window.location.hostname === "dacha.finance";
 const TestNearConfig = {
@@ -40,6 +43,12 @@ const NearConfig = IsMainnet ? MainNearConfig : TestNearConfig;
 export const Potato = (
   <span role="img" aria-label="potato" className="berry">
     🥔
+  </span>
+);
+
+export const Dacha = (
+  <span role="img" aria-label="dacha" className="berry">
+    🏡
   </span>
 );
 
@@ -194,6 +203,10 @@ export class App extends React.Component {
       refPool: false,
       unmintedAmount: Big(0),
       loading: false,
+      totalSupply: Big(0),
+      dachaSupply: Big(10000).mul(OneDacha),
+      accountBalance: Big(0),
+      refBalance: Big(0),
     };
 
     this._buttonDown = false;
@@ -642,7 +655,7 @@ export class App extends React.Component {
       this._account,
       NearConfig.refContractName,
       {
-        viewMethods: ["get_pool"],
+        viewMethods: ["get_pool", "get_deposit"],
         changeMethods: [],
       }
     );
@@ -794,17 +807,28 @@ export class App extends React.Component {
   }
 
   async _refreshRef() {
-    const [refPool, rawUnmintedAmount, rawTotalSupply] = await Promise.all([
+    const [
+      refPool,
+      rawUnmintedAmount,
+      rawTotalSupply,
+      rawRefBalance,
+    ] = await Promise.all([
       this._fetchRefPool(),
       this._contract.get_unminted_amount(),
       this._contract.ft_total_supply(),
+      this._refFinanceContract.get_deposit({
+        account_id: NearConfig.contractName,
+        token_id: NearConfig.wrapNearContractName,
+      }),
     ]);
     const unmintedAmount = Big(rawUnmintedAmount);
     const totalSupply = Big(rawTotalSupply);
+    const refBalance = Big(rawRefBalance);
     this.setState({
       unmintedAmount,
       totalSupply,
       refPool,
+      refBalance,
     });
   }
 
@@ -1125,10 +1149,10 @@ export class App extends React.Component {
 
     let nearIn, potatoOut;
     if (near) {
-      nearIn = Big(near).mul(Big(10).pow(24)).round(0, 0);
+      nearIn = Big(near).mul(OneNear).round(0, 0);
       potatoOut = this.getRefReturn(refPool, nearIn);
     } else {
-      potatoOut = Big(potato).mul(Big(10).pow(18)).round(0, 0);
+      potatoOut = Big(potato).mul(OnePotato).round(0, 0);
       nearIn = this.getRefInverseReturn(refPool, potatoOut);
     }
     return { nearIn, potatoOut };
@@ -1289,12 +1313,12 @@ export class App extends React.Component {
       >
         Buy{" "}
         <span className="font-weight-bold">
-          {potatoOut.div(Big(10).pow(18)).toFixed(1)}
+          {potatoOut.div(OnePotato).toFixed(1)}
           {Potato}
         </span>{" "}
         for{" "}
         <span className="font-weight-bold">
-          {nearIn.div(Big(10).pow(24)).toFixed(2)}Ⓝ
+          {nearIn.div(OneNear).toFixed(2)}Ⓝ
         </span>
       </button>
     );
@@ -1315,10 +1339,11 @@ export class App extends React.Component {
     });
   }
 
-  rules() {
+  rules(watchClass) {
     return (
-      <div className="container">
+      <div className={`container${watchClass}`}>
         <div>
+          <h3>Dacha Rules</h3>
           <p>
             Dacha Finance is an evolution of the berryclub project with improved
             tokenomics.
@@ -1398,23 +1423,55 @@ export class App extends React.Component {
                 <span className="font-weight-bold">
                   {this.state.totalSupply
                     .add(this.state.unmintedAmount)
-                    .div(Big(10).pow(18))
+                    .div(OnePotato)
                     .toFixed(2)}
                   {Potato}
                 </span>
               </span>
             </div>
           </div>
-          <div className={`buttons${watchClass}`}>
+          {this.state.signedIn && (
+            <div className={`buttons${watchClass}`}>
+              <div>
+                {this.buyButton(0.1, null)}
+                {this.buyButton(1, null)}
+                {this.buyButton(5, null)}
+              </div>
+              <div>
+                {this.buyButton(null, 40)}
+                {this.buyButton(null, 200)}
+                {this.buyButton(null, 1000)}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        ""
+      );
+    const dachaToken =
+      !this.state.watchMode && this.state.refPool ? (
+        <div>
+          <div>
             <div>
-              {this.buyButton(0.1, null)}
-              {this.buyButton(1, null)}
-              {this.buyButton(5, null)}
+              {Dacha} Treasury:{" "}
+              <span className="balances">
+                <span className="font-weight-bold">
+                  {this.state.refBalance
+                    .add(this.state.accountBalance)
+                    .div(OneNear)
+                    .toFixed(2)}
+                  Ⓝ
+                </span>
+              </span>
             </div>
             <div>
-              {this.buyButton(null, 40)}
-              {this.buyButton(null, 200)}
-              {this.buyButton(null, 1000)}
+              Circulating supply:{" "}
+              <span className="balances">
+                <span className="font-weight-bold">
+                  {this.state.dachaSupply.div(OneDacha).toFixed(2)}
+                  {Dacha}
+                </span>
+              </span>
             </div>
           </div>
         </div>
@@ -1490,6 +1547,7 @@ export class App extends React.Component {
             Log in with NEAR Wallet
           </button>
         </div>
+        {prices}
       </div>
     );
     const weapons = this.state.weaponsOn ? (
@@ -1503,6 +1561,7 @@ export class App extends React.Component {
     ) : (
       ""
     );
+
     return (
       <div>
         <div className={`header${watchClass}`}>
@@ -1559,57 +1618,8 @@ export class App extends React.Component {
             </div>
           </div>
         </div>
-        {this.rules()}
-        {/*<div className={`padded${watchClass}`}>*/}
-        {/*  {this.state.signedIn ? (*/}
-        {/*    <div>*/}
-        {/*      <iframe*/}
-        {/*        title="irc"*/}
-        {/*        className="irc"*/}
-        {/*        frameBorder="0"*/}
-        {/*        src={`https://kiwiirc.com/client/irc.kiwiirc.com/?nick=${this.state.ircAccountId}#berryclub`}*/}
-        {/*      />*/}
-        {/*    </div>*/}
-        {/*  ) : (*/}
-        {/*    ""*/}
-        {/*  )}*/}
-        {/*</div>*/}
-        {/*<div className={`padded${watchClass}`}>*/}
-        {/*  <div className="video-container">*/}
-        {/*    <iframe*/}
-        {/*      title="youtube3"*/}
-        {/*      className="youtube"*/}
-        {/*      src="https://www.youtube.com/embed/wfTa-Kgw2DM"*/}
-        {/*      frameBorder="0"*/}
-        {/*      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"*/}
-        {/*      allowFullScreen*/}
-        {/*    />*/}
-        {/*  </div>*/}
-        {/*</div>*/}
-        {/*<div className={`padded${watchClass}`}>*/}
-        {/*  <div className="video-container">*/}
-        {/*    <iframe*/}
-        {/*      title="youtube2"*/}
-        {/*      className="youtube"*/}
-        {/*      src="https://www.youtube.com/embed/PYF6RWd7ZgI"*/}
-        {/*      frameBorder="0"*/}
-        {/*      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"*/}
-        {/*      allowFullScreen*/}
-        {/*    />*/}
-        {/*  </div>*/}
-        {/*</div>*/}
-        {/*<div className={`padded${watchClass}`}>*/}
-        {/*  <div className="video-container">*/}
-        {/*    <iframe*/}
-        {/*      title="youtube"*/}
-        {/*      className="youtube"*/}
-        {/*      src="https://www.youtube.com/embed/lMSWhCwstLo"*/}
-        {/*      frameBorder="0"*/}
-        {/*      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"*/}
-        {/*      allowFullScreen*/}
-        {/*    />*/}
-        {/*  </div>*/}
-        {/*</div>*/}
+        {dachaToken}
+        {this.rules(watchClass)}
         {weapons}
         <a
           className={`github-fork-ribbon right-bottom fixed${watchClass}`}
