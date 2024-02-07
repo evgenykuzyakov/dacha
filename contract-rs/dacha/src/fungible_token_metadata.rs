@@ -15,7 +15,7 @@ impl FungibleTokenMetadataProvider for Contract {
             icon: Some(String::from(ICON)),
             reference: None,
             reference_hash: None,
-            decimals: 18,
+            decimals: 21,
         }
     }
 }

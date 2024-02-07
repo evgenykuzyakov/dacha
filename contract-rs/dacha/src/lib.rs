@@ -10,7 +10,7 @@ use near_sdk::{
 const TIME_FROM_LAST_PING_NS: Duration = 1 * 60 * 10u64.pow(9);
 const ONE_DAY_MS: Duration = 24 * 60 * 60 * 1000;
 
-const MINT_PER_DAY: u128 = 10000 * PIXEL_COST;
+const MINT_PER_DAY: u128 = 100 * PIXEL_COST;
 
 pub mod account;
 pub use crate::account::*;

@@ -4,7 +4,7 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::json_types::{ValidAccountId, U128};
 use near_sdk::{env, near_bindgen, AccountId};
 
-pub const PIXEL_COST: Balance = 1_000_000_000_000_000_000;
+pub const PIXEL_COST: Balance = 1_000_000_000_000_000_000_000;
 pub const ONE_NEAR: Balance = 1_000_000_000_000_000_000_000_000;
 pub const DEFAULT_POTATO_BALANCE: Balance = 0;
 /// Current reward is 1 pixel per day per pixel.

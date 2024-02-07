@@ -36,7 +36,7 @@ const randomPublicKey = nearAPI.utils.PublicKey.from(
 const StorageCostPerByte = Big(10).pow(19);
 const OneNear = Big(10).pow(24);
 const AccountSafetyMargin = OneNear.div(2);
-const OnePotato = Big(10).pow(18);
+const OnePotato = Big(10).pow(21);
 const OneDacha = Big(10).pow(18);
 
 const IsMainnet = window.location.hostname === "dacha.finance";
