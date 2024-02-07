@@ -61,7 +61,12 @@ const NearConfig = IsMainnet ? MainNearConfig : TestNearConfig;
 async function setupSelector() {
   return setupWalletSelector({
     network: NearConfig.networkId,
-    modules: [setupHereWallet(), setupMintbaseWallet(), setupMyNearWallet()],
+    modules: [
+      setupHereWallet(),
+      setupMintbaseWallet(),
+      setupMyNearWallet(),
+      setupMeteorWallet(),
+    ],
   });
 }
 
@@ -832,7 +837,11 @@ export class App extends React.Component {
     const setAccount = (account) => {
       this._account = account;
       this._accountId = account.accountId;
-      this.setState({ account });
+      this.setState({
+        account,
+        signedIn: !!this._accountId,
+        accountId: this._accountId,
+      });
     };
 
     selector.store.observable.subscribe(async (walletState) => {
