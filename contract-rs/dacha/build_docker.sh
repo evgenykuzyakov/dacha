@@ -5,7 +5,7 @@ set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-NAME="build_social_db"
+NAME="build_dacha"
 
 if docker ps -a --format '{{.Names}}' | grep -Eq "^${NAME}\$"; then
     echo "Container exists"
@@ -25,5 +25,5 @@ docker start $NAME
 docker exec -it $NAME /bin/bash -c "rustup toolchain install 1.69.0; rustup default 1.69.0; rustup target add wasm32-unknown-unknown; cargo build --package contract --target wasm32-unknown-unknown --release"
 
 mkdir -p res
-cp $DIR/target/wasm32-unknown-unknown/release/contract.wasm $DIR/res/social_db_release.wasm
+cp $DIR/target/wasm32-unknown-unknown/release/dacha.wasm $DIR/res/dacha_release.wasm
 
