@@ -1573,7 +1573,7 @@ export class App extends React.Component {
               100 {Potato} per day is minted by the contract and given to the
               REF pool.
             </li>
-            <li>2500 {Potato} per day is farmed from the pixel board.</li>
+            <li>250 {Potato} per day is farmed from the pixel board.</li>
             <li>1 {Potato} is burned by drawing a pixel.</li>
           </p>
           <p>
