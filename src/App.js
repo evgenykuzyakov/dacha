@@ -770,7 +770,9 @@ export class App extends React.Component {
     }
     account.startTime = new Date().getTime();
     account.potatoPixels = account.numPixels;
-    account.potatoRewardPerMs = account.potatoPixels / (24 * 60 * 60 * 1000);
+    account.potatoRewardPerDay = account.potatoPixels / 10;
+    account.potatoRewardPerMs =
+      account.potatoRewardPerDay / (24 * 60 * 60 * 1000);
     return account;
   }
 
@@ -1847,10 +1849,10 @@ const Balance = (props) => {
   const fraction = props.detailed ? 3 : 1;
   const potatoBalance = account.potatoBalance - (props.pendingPixels || 0);
   const potatoFarm =
-    account.potatoPixels > 0 ? (
+    account.potatoRewardPerDay > 0 ? (
       <span>
         {"(+"}
-        <span className="font-weight-bold">{account.potatoPixels}</span>
+        <span className="font-weight-bold">{account.potatoRewardPerDay}</span>
         {Potato}
         {"/day)"}
       </span>
