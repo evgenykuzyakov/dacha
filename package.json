@@ -3,6 +3,9 @@
   "version": "0.3.0",
   "homepage": "https://dacha.finance",
   "private": true,
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
     "@near-wallet-selector/core": "^8.9.3",
     "@near-wallet-selector/here-wallet": "^8.9.3",
