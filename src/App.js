@@ -61,19 +61,7 @@ const NearConfig = IsMainnet ? MainNearConfig : TestNearConfig;
 async function setupSelector() {
   return setupWalletSelector({
     network: NearConfig.networkId,
-    modules: [
-      setupHereWallet(),
-      setupSender(),
-      setupMathWallet(),
-      setupNightly(),
-      setupMeteorWallet(),
-      setupNearSnap(),
-      setupWelldoneWallet(),
-      setupLedger(),
-      setupNearMobileWallet(),
-      setupMintbaseWallet(),
-      setupMyNearWallet(),
-    ],
+    modules: [setupHereWallet(), setupMintbaseWallet(), setupMyNearWallet()],
   });
 }
 
@@ -132,30 +120,6 @@ const functionCallCreator = UseLegacyFunctionCallCreator
     })
   : nearAPI.transactions.functionCall;
 
-function getKeyStoreForContract(contractId) {
-  return new nearAPI.keyStores.BrowserLocalStorageKeyStore(
-    window.localStorage,
-    `${contractId}:keystore:`
-  );
-}
-
-async function createWalletConnectionForContract(near, contractId) {
-  const keyStore = getKeyStoreForContract(contractId);
-
-  const selector = await near.selector;
-  if (selector) {
-    const wallet = await selector.wallet();
-    const _near = await nearAPI.connect({
-      keyStore,
-      walletUrl: wallet.metadata.walletUrl,
-      networkId: near.config.networkId,
-      nodeUrl: near.config.nodeUrl,
-      headers: {},
-    });
-    return new nearAPI.WalletConnection(_near, contractId);
-  }
-}
-
 async function functionCall(
   near,
   contractName,
@@ -166,25 +130,6 @@ async function functionCall(
 ) {
   try {
     const wallet = await (await near.selector).wallet();
-
-    if (contractName !== NearConfig.contractName) {
-      const contractWalletConnection = await createWalletConnectionForContract(
-        near,
-        contractName
-      );
-      if (contractWalletConnection.isSignedIn()) {
-        const functionAccessKeyAccount = contractWalletConnection.account();
-
-        const result = await functionAccessKeyAccount.functionCall({
-          contractId: contractName,
-          methodName,
-          args,
-          gas,
-        });
-
-        return result;
-      }
-    }
 
     return await wallet.signAndSendTransaction({
       receiverId: contractName,
@@ -1609,11 +1554,12 @@ export class App extends React.Component {
     });
   }
 
-  rules(watchClass) {
+  rules(watchClass, dachaToken) {
     return (
       <div className={`container${watchClass}`}>
         <div>
           <h3>Dacha Rules</h3>
+          <div>{dachaToken}</div>
           <p>
             Dacha Finance is an evolution of the berryclub project with improved
             tokenomics.
@@ -1878,8 +1824,7 @@ export class App extends React.Component {
             </div>
           </div>
         </div>
-        {dachaToken}
-        {this.rules(watchClass)}
+        {this.rules(watchClass, dachaToken)}
         {weapons}
         <a
           className={`github-fork-ribbon right-bottom fixed${watchClass}`}
