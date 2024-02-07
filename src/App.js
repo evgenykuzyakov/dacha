@@ -1588,7 +1588,7 @@ export class App extends React.Component {
         </span>{" "}
         for{" "}
         <span className="font-weight-bold">
-          {nearIn.div(OneNear).toFixed(2)}Ⓝ
+          {nearIn?.div(OneNear)?.toFixed(2)}Ⓝ
         </span>
       </button>
     );
@@ -1668,7 +1668,10 @@ export class App extends React.Component {
       this.state.unmintedAmount
     );
 
-    return refPool.potato.mul(1000000).div(refPool.near).toFixed(3);
+    return refPool.potato
+      .mul(OneNear.div(OnePotato))
+      .div(refPool.near)
+      .toFixed(3);
   }
 
   render() {
